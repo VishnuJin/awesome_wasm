@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: awesome-wasm-wascc
+data:
+  myval: "cool stuff"
+  bacon_ipsum.txt: |
+    awesome project by bits N' bytes :)
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: awesome-wasm-wascc
+spec:
+  containers:
+    - name: awesome-wasm-wascc
+      image: gcr.io/tensile-ethos-299112/awesome-wasm-wascc:1.0
+      ports:
+        - containerPort: 8081
+          hostPort: 8081
+      env:
+        - name: FOO
+          value: bar
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: CONFIG_MAP_VAL
+          valueFrom:
+            configMapKeyRef:
+              key: myval
+              name: awesome-wasm-wascc
+      volumeMounts:
+        - name: storage
+          mountPath: /mnt/storage
+  volumes:
+    - name: storage
+      configMap:
+        name: awesome-wasm-wascc
+  nodeSelector:
+    kubernetes.io/arch: "wasm32-wascc"
+  tolerations:
+    - key: "kubernetes.io/arch"
+      operator: "Equal"
+      value: "wasm32-wascc"
+      effect: "NoExecute"
+    - key: "node.kubernetes.io/network-unavailable"
+      operator: "Exists"
+      effect: "NoSchedule"
+    - key: "kubernetes.io/arch"
+      operator: "Equal"
+      value: "wasm32-wascc"
+      effect: "NoSchedule"
